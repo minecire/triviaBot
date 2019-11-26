@@ -77,7 +77,7 @@ client.on('message', message => {
             message.channel.send("```Trivia question cancelled. The answer was "+answer+"```");
             currentPlayer.Cancelled++;
             answering = false;
-            
+
         }
         else if(message.content.toLowerCase() == answer.toLowerCase()){
             message.channel.send("```Correct! The answer was "+answer+"```");
@@ -93,4 +93,4 @@ client.on('message', message => {
     }
 });
 
-client.login('NjQ4OTI1NTk3OTU5MTkyNTk4.Xd2jeQ.FkfH-2WjysDb_ltP6MoVipVkceU');
+client.login(process.env.BOT_TOKEN);
