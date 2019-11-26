@@ -73,7 +73,7 @@ client.on('message', message => {
             }
             currentChannel.answer = lineSplit[i];
             currentChannel.answering = true;
-            currentChannel.message.channel.send("```Trivia question #"+currentTriv+"\n"+question+"```");
+            message.channel.send("```Trivia question #"+currentTriv+"\n"+question+"```");
             setTimeout(function(){
                 if(currentChannel.answering){
                     message.channel.send("```Out of time. The correct answer was "+answer+"```");
