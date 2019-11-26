@@ -48,7 +48,7 @@ client.on('message', message => {
     // });
     if(message.content == "triv q" || message.content == "triv question"){
         if(currentChannel.answering){
-            message.channel.send("```Previous Question cancelled. The answer was "+answer+"```");
+            message.channel.send("```Previous Question cancelled. The answer was "+currentChannel.answer+"```");
             currentPlayer.Cancelled++;
             currentChannel.answering = false;
         }
@@ -73,10 +73,10 @@ client.on('message', message => {
             }
             currentChannel.answer = lineSplit[i];
             currentChannel.answering = true;
-            message.channel.send("```Trivia question #"+currentTriv+"\n"+question+"```");
+            message.channel.send("```Trivia question #"+currentTriv+"\n"+currentChannel.question+"```");
             setTimeout(function(){
                 if(currentChannel.answering){
-                    message.channel.send("```Out of time. The correct answer was "+answer+"```");
+                    message.channel.send("```Out of time. The correct answer was "+currentChannel.answer+"```");
                     currentPlayer.OutOfTime++;
                     currentChannel.answering = false;
                 }
@@ -85,13 +85,13 @@ client.on('message', message => {
     }
     else if(currentChannel.answering){
         if(message.content == "cancel"){
-            message.channel.send("```Trivia question cancelled. The answer was "+answer+"```");
+            message.channel.send("```Trivia question cancelled. The answer was "+currentChannel.answer+"```");
             currentPlayer.Cancelled++;
             currentChannel.answering = false;
 
         }
         else if(message.content.toLowerCase() == answer.toLowerCase()){
-            message.channel.send("```Correct! The answer was "+answer+"```");
+            message.channel.send("```Correct! The answer was "+currentChannel.answer+"```");
             currentChannel.answering = false;
             currentPlayer.Correct++;
         }
