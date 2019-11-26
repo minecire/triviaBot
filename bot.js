@@ -38,8 +38,9 @@ client.on('message', message => {
     // });
     if(message.content == "triv q" || message.content == "triv question"){
         if(answering){
-            message.channel.send("```Previous Question cancelled");
+            message.channel.send("```Previous Question cancelled. The answer was "+answer+"```");
             currentPlayer.Cancelled++;
+            answering = false;
         }
         fs.readFile('TriviaQ.txt', 'utf-8', (err, data) => {
             if (err) throw err;
