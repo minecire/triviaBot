@@ -5,9 +5,7 @@ const sf = require('snekfetch');
 const fs = require('fs');
 var currentTriv;
 var currentLine;
-var question;
-var answering = false;
-var answer;
+var channels = [];
 var players = [];
 
 
@@ -31,16 +29,28 @@ client.on('message', message => {
         currentPlayer = {Name:message.author.username, id:message.author.id, Correct:0, Incorrect:0, OutOfTime:0, Cancelled:0};
         players.push(currentPlayer);
     }
+    var currentChannel;
+    var addChannel = true;
+    for(var i = 0; i < channels.length; i++){
+        if(channels[i].id == message.channel.id){
+            addChannel = false;
+            currentChannel = channels[i];
+        }
+    }
+    if(addChannel){
+        currentChannel = {id:message.channel.id, question:"", answer:"", answering=false};
+        channels.push(currentChannel);
+    }
     // sf.get(`https://www.reddit.com/r/trivia/random.json?limit=1`).then(res => {
     // message.channel.send(res.body[0].data.children[0].data.selftext);
     // //console.log(res.body[1].data.children);
 
     // });
     if(message.content == "triv q" || message.content == "triv question"){
-        if(answering){
+        if(currentChannel.answering){
             message.channel.send("```Previous Question cancelled. The answer was "+answer+"```");
             currentPlayer.Cancelled++;
-            answering = false;
+            currentChannel.answering = false;
         }
         fs.readFile('TriviaQ.txt', 'utf-8', (err, data) => {
             if (err) throw err;
@@ -50,39 +60,39 @@ client.on('message', message => {
             var lineSplit = dataSplit[currentTriv].split(',');
             var i;
             if(currentTriv > 2212){
-                question = lineSplit[1];
+                currentChannel.question = lineSplit[1];
                 i = 2;
             }
             else{
-                question = lineSplit[0];
+                currentChannel.question = lineSplit[0];
                 i = 1;
             }
             while(lineSplit[i+1] != ""){
-                question += ","+lineSplit[i];
+                currentChannel.question += ","+lineSplit[i];
                 i++;
             }
-            answer = lineSplit[i];
-            answering = true;
-            message.channel.send("```Trivia question #"+currentTriv+"\n"+question+"```");
+            currentChannel.answer = lineSplit[i];
+            currentChannel.answering = true;
+            currentChannel.message.channel.send("```Trivia question #"+currentTriv+"\n"+question+"```");
             setTimeout(function(){
-                if(answering){
+                if(currentChannel.answering){
                     message.channel.send("```Out of time. The correct answer was "+answer+"```");
                     currentPlayer.OutOfTime++;
-                    answering = false;
+                    currentChannel.answering = false;
                 }
             },30000);
         });
     }
-    else if(answering){
+    else if(currentChannel.answering){
         if(message.content == "cancel"){
             message.channel.send("```Trivia question cancelled. The answer was "+answer+"```");
             currentPlayer.Cancelled++;
-            answering = false;
+            currentChannel.answering = false;
 
         }
         else if(message.content.toLowerCase() == answer.toLowerCase()){
             message.channel.send("```Correct! The answer was "+answer+"```");
-            answering = false;
+            currentChannel.answering = false;
             currentPlayer.Correct++;
         }
         else{
