@@ -101,7 +101,7 @@ client.on('message', message => {
         }
     }
     if(message.content == "triv stats" || message.content == "triv s"){
-        message.channel.send("```Stats for "+currentPlayer.Name+"\n\nAnswered Correctly "+currentPlayer.Correct+" times \nAnswered Incorrectly "+currentPlayer.Incorrect+" times \nRan out of time "+currentPlayer.OutOfTime+" times\nCancelled a question "+currentPlayer.Cancelled+" times```")
+        message.channel.send("```diff\nStats for "+currentPlayer.Name+"\n\n+Answered Correctly "+currentPlayer.Correct+" times \n-Answered Incorrectly "+currentPlayer.Incorrect+" times \nAnsewered Correctly "+Math.floor(currentPlayer.Correct/currentPlayer.Incorrect*100)+"% of the time\n-Ran out of time "+currentPlayer.OutOfTime+" times\n-Cancelled a question "+currentPlayer.Cancelled+" times```")
     }
 });
 
