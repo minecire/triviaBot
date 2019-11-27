@@ -38,7 +38,7 @@ client.on('message', message => {
         }
     }
     if(addChannel){
-        currentChannel = {id:message.channel.id, question:"", answer:"", answering:false};
+        currentChannel = {id:message.channel.id, question:"", answer:"", answering:false, timeout};
         channels.push(currentChannel);
     }
     // sf.get(`https://www.reddit.com/r/trivia/random.json?limit=1`).then(res => {
@@ -51,6 +51,7 @@ client.on('message', message => {
             message.channel.send("```Previous Question cancelled. The answer was "+currentChannel.answer+"```");
             currentPlayer.Cancelled++;
             currentChannel.answering = false;
+            clearTimeout(currentChannel.timeout);
         }
         fs.readFile('TriviaQ.txt', 'utf-8', (err, data) => {
             if (err) throw err;
@@ -74,7 +75,7 @@ client.on('message', message => {
             currentChannel.answer = lineSplit[i];
             currentChannel.answering = true;
             message.channel.send("```Trivia question #"+currentTriv+"\n"+currentChannel.question+"```");
-            setTimeout(function(){
+            currentChannel.timeout = setTimeout(function(){
                 if(currentChannel.answering){
                     message.channel.send("```Out of time. The correct answer was "+currentChannel.answer+"```");
                     currentPlayer.OutOfTime++;
@@ -84,11 +85,11 @@ client.on('message', message => {
         });
     }
     else if(currentChannel.answering){
-        if(message.content == "cancel"){
+        if(message.content == "cancel" || message.content == "idk" || message.content == "nvm"){
             message.channel.send("```Trivia question cancelled. The answer was "+currentChannel.answer+"```");
             currentPlayer.Cancelled++;
             currentChannel.answering = false;
-
+            clearTimeout(currentChannel.timeout);
         }
         else if(message.content.toLowerCase() == currentChannel.answer.toLowerCase()){
             message.channel.send("```Correct! The answer was "+currentChannel.answer+"```");
