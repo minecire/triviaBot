@@ -38,7 +38,7 @@ client.on('message', message => {
         }
     }
     if(addChannel){
-        currentChannel = {id:message.channel.id, question:"", answer:"", answering:false, timeout};
+        currentChannel = {id:message.channel.id, question:"", answer:"", answering:false, timeout:0};
         channels.push(currentChannel);
     }
     // sf.get(`https://www.reddit.com/r/trivia/random.json?limit=1`).then(res => {
