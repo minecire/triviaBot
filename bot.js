@@ -81,7 +81,7 @@ client.on('message', message => {
                     currentPlayer.OutOfTime++;
                     currentChannel.answering = false;
                 }
-            },30000);
+            },90000);
         });
     }
     else if(currentChannel.answering){
