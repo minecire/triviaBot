@@ -90,7 +90,7 @@ client.on('message', message => {
             currentChannel.answering = false;
 
         }
-        else if(message.content.toLowerCase() == answer.toLowerCase()){
+        else if(message.content.toLowerCase() == currentChannel.answer.toLowerCase()){
             message.channel.send("```Correct! The answer was "+currentChannel.answer+"```");
             currentChannel.answering = false;
             currentPlayer.Correct++;
