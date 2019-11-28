@@ -47,7 +47,7 @@ client.on('message', message => {
 
     // });
     if(message.content == "triv q" || message.content == "triv question"){
-        if(currentChannel.answering){
+        if(currentChannel.wait > 0){
             message.channel.send("```Previous Question cancelled. The answer was "+currentChannel.answer+"```");
             currentPlayer.Cancelled++;
         }
@@ -97,7 +97,7 @@ client.on('message', message => {
             currentChannel.wait = 90;
         });
     }
-    else if(currentChannel.answering){
+    else if(currentChannel.wait > 0){
         if(message.content == "cancel" || message.content == "idk" || message.content == "nvm"){
             message.channel.send("```Trivia question cancelled. The answer was "+currentChannel.answer+"```");
             currentPlayer.Cancelled++;
@@ -105,7 +105,7 @@ client.on('message', message => {
         }
         else if(message.content.toLowerCase().replace(/ /, '').replace(/the/i, '') == currentChannel.answer.toLowerCase().replace(/ /,'').replace(/the/i, '')){
             message.channel.send("```Correct! The answer was "+currentChannel.answer+"```");
-            currentChannel.answering = false;
+            currentChannel.wait = 0;
             currentPlayer.Correct++;
         }
         else{
