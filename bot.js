@@ -38,7 +38,7 @@ client.on('message', message => {
         }
     }
     if(addChannel){
-        currentChannel = {id:message.channel.id, question:"", answer:"", answering:false, timeout:0};
+        currentChannel = {id:message.channel.id, question:"", answer:"", timeout:0, wait:0};
         channels.push(currentChannel);
     }
     // sf.get(`https://www.reddit.com/r/trivia/random.json?limit=1`).then(res => {
@@ -50,8 +50,6 @@ client.on('message', message => {
         if(currentChannel.answering){
             message.channel.send("```Previous Question cancelled. The answer was "+currentChannel.answer+"```");
             currentPlayer.Cancelled++;
-            currentChannel.answering = false;
-            clearTimeout(currentChannel.timeout);
         }
         fs.readFile('TriviaQ.txt', 'utf-8', (err, data) => {
             if (err) throw err;
@@ -75,21 +73,14 @@ client.on('message', message => {
             currentChannel.answer = lineSplit[i];
             currentChannel.answering = true;
             message.channel.send("```Trivia question #"+currentTriv+"\n"+currentChannel.question+"```");
-            currentChannel.timeout = setTimeout(function(){
-                if(currentChannel.answering){
-                    message.channel.send("```Out of time. The correct answer was "+currentChannel.answer+"```");
-                    currentPlayer.OutOfTime++;
-                    currentChannel.answering = false;
-                }
-            },90000);
+            currentChannel.wait = 90;
         });
     }
     else if(currentChannel.answering){
         if(message.content == "cancel" || message.content == "idk" || message.content == "nvm"){
             message.channel.send("```Trivia question cancelled. The answer was "+currentChannel.answer+"```");
             currentPlayer.Cancelled++;
-            currentChannel.answering = false;
-            clearTimeout(currentChannel.timeout);
+            currentChannel.wait = 90;
         }
         else if(message.content.toLowerCase() == currentChannel.answer.toLowerCase()){
             message.channel.send("```Correct! The answer was "+currentChannel.answer+"```");
@@ -106,3 +97,14 @@ client.on('message', message => {
 });
 
 client.login(process.env.BOT_TOKEN);
+
+var interval = setInterval(function(){
+    for(var i = 0; i < channels.length; i++){
+        channels[i].wait--;
+        if(channels[i].wait == 0){
+            message.channel.send("```Out of time. The correct answer was "+currentChannel.answer+"```");
+            currentPlayer.OutOfTime++;
+            channels[i].answering = false;
+        }
+    }
+},1000);
