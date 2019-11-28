@@ -75,8 +75,8 @@ client.on('message', message => {
                     currentChannel.question += ","+lineSplit[i];
                     i++;
                 }
-                currentChannel.question = currentChannel.question.replace(/""/, 'xqe');
-                currentChannel.question = currentChannel.question.replace(/"/, '');
+                currentChannel.question = currentChannel.question.replace(/\"\"/, 'xqe');
+                currentChannel.question = currentChannel.question.replace(/\"/, '');
                 currentChannel.question = currentChannel.question.replace(/[x][q][e]/, '"');
             }
             currentChannel.answer = "";
@@ -85,8 +85,8 @@ client.on('message', message => {
                     currentChannel.answer += ","+lineSplit[i];
                     i++;
                 }
-                currentChannel.answer = currentChannel.answer.replace(/""/, 'xqe');
-                currentChannel.answer = currentChannel.answer.replace(/"/, '');
+                currentChannel.answer = currentChannel.answer.replace(/\"\"/, 'xqe');
+                currentChannel.answer = currentChannel.answer.replace(/\"/, '');
                 currentChannel.answer = currentChannel.answer.replace(/[x][q][e]/, '"');
             }
             else{
@@ -103,7 +103,7 @@ client.on('message', message => {
             currentPlayer.Cancelled++;
             currentChannel.wait = 0;
         }
-        else if(message.content.toLowerCase().replace(/ /, '').replace(/[t][h][e]/i, '') == currentChannel.answer.toLowerCase().replace(/ /,'').replace(/[t][h][e]/i, '')){
+        else if(message.content.toLowerCase().replace(/\s/, '').replace(/[t][h][e]/i, '') == currentChannel.answer.toLowerCase().replace(/\s/,'').replace(/[t][h][e]/i, '')){
             message.channel.send("```Correct! The answer was "+currentChannel.answer+"```");
             currentChannel.wait = 0;
             currentPlayer.Correct++;
