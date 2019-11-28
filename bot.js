@@ -48,7 +48,7 @@ client.on('message', message => {
 
     // });
     if (message.content == 'triv ping' || message.content == 'triv p') {
-        msg.reply("pong")
+        message.reply("pong")
         .then(rep => {
             let ping = rep.createdTimestamp-message.createdTimestamp;
             rep.edit(`<@${message.author.id}> ponged after ` + ping.toString() + "ms.");
