@@ -47,11 +47,11 @@ client.on('message', message => {
     // //console.log(res.body[1].data.children);
 
     // });
-    if (msg.content == 'triv ping' || msg.content == 'triv p') {
+    if (message.content == 'triv ping' || message.content == 'triv p') {
         msg.reply("pong")
         .then(rep => {
-            let ping = rep.createdTimestamp-msg.createdTimestamp;
-            rep.edit(`<@${msg.author.id}> ponged after ` + ping.toString() + "ms.");
+            let ping = rep.createdTimestamp-message.createdTimestamp;
+            rep.edit(`<@${message.author.id}> ponged after ` + ping.toString() + "ms.");
         })
         .catch(console.error);
     }
