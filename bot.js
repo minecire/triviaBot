@@ -115,7 +115,7 @@ client.on('message', message => {
         }
     }
     if(message.content == "triv stats" || message.content == "triv s"){
-        message.channel.send("```diff\nStats for "+currentPlayer.Name+"\n\n+Answered Correctly "+currentPlayer.Correct+" times \n-Answered Incorrectly "+currentPlayer.Incorrect+" times \n"+(Math.floor((currentPlayer.Correct+currentPlayer.Incorrect)/currentPlayer.Incorrect*100)>50?"+":"-")+"Answered Correctly "+Math.floor((currentPlayer.Correct+currentPlayer.Incorrect)/currentPlayer.Incorrect*100)+"% of the time\n-Ran out of time "+currentPlayer.OutOfTime+" times\n-Cancelled a question "+currentPlayer.Cancelled+" times```")
+        message.channel.send("```diff\nStats for "+currentPlayer.Name+"\n\n+Answered Correctly "+currentPlayer.Correct+" times \n-Answered Incorrectly "+currentPlayer.Incorrect+" times \n"+(Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)>50?"+":"-")+"Answered Correctly "+Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)+"% of the time\n-Ran out of time "+currentPlayer.OutOfTime+" times\n-Cancelled a question "+currentPlayer.Cancelled+" times```")
     }
     if(message.content == "triv h" || message.content == "triv help"){
         message.channel.send("```Trivia bot commands: \ntriv question: recieve a trivia question to try to answer. This will also cancel a previous question if it is currently being asked. Aliases: triv q\ncancel: cancel the question currently being asked. Aliases: idk, nvm\ntriv stats: displays statistics about you. Aliases: triv s\ntriv help: displays this help message. Alisases: triv h```");
