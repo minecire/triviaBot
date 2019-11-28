@@ -66,11 +66,24 @@ client.on('message', message => {
                 currentChannel.question = lineSplit[0];
                 i = 1;
             }
-            while(lineSplit[i+1] != ""){
-                currentChannel.question += ","+lineSplit[i];
-                i++;
+            if(lineSplit[i-1][0] == '"'){
+                while(lineSplit[i-1][lineSplit[i].length-1] != '"'){
+                    currentChannel.question += ","+lineSplit[i];
+                    i++;
+                }
+                currentChannel.question = currentCHannel.question.split('"')[1];
             }
-            currentChannel.answer = lineSplit[i];
+            currentChannel.answer = "";
+            if(lineSplit[i][0] == '"'){
+                while(lineSplit[i-1][lineSplit[i].length-1] != '"'){
+                    currentChannel.answer += ","+lineSplit[i];
+                    i++;
+                }
+                currentChannel.answer = currentChannel.answer.split('"')[1];
+            }
+            else{
+                currentChannel.answer = lineSplit[i];
+            }
             currentChannel.answering = true;
             message.channel.send("```Trivia question #"+currentTriv+"\n"+currentChannel.question+"```");
             currentChannel.wait = 90;
@@ -80,9 +93,9 @@ client.on('message', message => {
         if(message.content == "cancel" || message.content == "idk" || message.content == "nvm"){
             message.channel.send("```Trivia question cancelled. The answer was "+currentChannel.answer+"```");
             currentPlayer.Cancelled++;
-            currentChannel.wait = 90;
+            currentChannel.wait = 0;
         }
-        else if(message.content.toLowerCase() == currentChannel.answer.toLowerCase()){
+        else if(message.content.toLowerCase().replace(/ /, '').replace(/the/i, '') == currentChannel.answer.toLowerCase().replace(/ /,'').replace(/the/i, '')){
             message.channel.send("```Correct! The answer was "+currentChannel.answer+"```");
             currentChannel.answering = false;
             currentPlayer.Correct++;
@@ -104,7 +117,6 @@ var interval = setInterval(function(){
         if(channels[i].wait == 0){
             message.channel.send("```Out of time. The correct answer was "+currentChannel.answer+"```");
             currentPlayer.OutOfTime++;
-            channels[i].answering = false;
         }
     }
 },1000);
