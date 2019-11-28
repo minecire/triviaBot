@@ -58,7 +58,11 @@ client.on('message', message => {
             currentLine = Math.floor(Math.random()*2);
             var lineSplit = dataSplit[currentTriv].split(',');
             var i;
-            if(currentTriv > 2212){
+            if(currentTriv > 17448){
+                currentChannel.question = lineSplit[2];
+                i = 3;
+            }
+            else if(currentTriv > 2212){
                 currentChannel.question = lineSplit[1];
                 i = 2;
             }
