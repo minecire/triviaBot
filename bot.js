@@ -71,7 +71,9 @@ client.on('message', message => {
                     currentChannel.question += ","+lineSplit[i];
                     i++;
                 }
-                currentChannel.question = currentCHannel.question.split('"')[1];
+                currentChannel.question = currentChannel.question.replace('""', 'xqe,.axx');
+                currentChannel.question = currentChannel.question.replace('"', '');
+                currentChannel.question = currentChannel.question.replace("xqe,.axx", '"');
             }
             currentChannel.answer = "";
             if(lineSplit[i][0] == '"'){
@@ -79,7 +81,9 @@ client.on('message', message => {
                     currentChannel.answer += ","+lineSplit[i];
                     i++;
                 }
-                currentChannel.answer = currentChannel.answer.split('"')[1];
+                currentChannel.answer = currentChannel.answer.replace('""', 'xqe,.axx');
+                currentChannel.answer = currentChannel.answer.replace('"', '');
+                currentChannel.answer = currentChannel.answer.replace("xqe,.axx", '"');
             }
             else{
                 currentChannel.answer = lineSplit[i];
