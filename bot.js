@@ -77,7 +77,7 @@ client.on('message', message => {
                 }
                 currentChannel.question = currentChannel.question.replace(/""/, 'xqe,.axx');
                 currentChannel.question = currentChannel.question.replace(/"/, '');
-                currentChannel.question = currentChannel.question.replace(/xqe/, '"');
+                currentChannel.question = currentChannel.question.replace(/[x][q][e]/, '"');
             }
             currentChannel.answer = "";
             if(lineSplit[i][0] == '"'){
