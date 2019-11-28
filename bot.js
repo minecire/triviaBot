@@ -76,7 +76,7 @@ client.on('message', message => {
                     i++;
                 }
                 currentChannel.question = currentChannel.question.replace(/\"\"/, 'xqe');
-                currentChannel.question = currentChannel.question.replace(/\"/, '');
+                currentChannel.question = currentChannel.question.replace(/\"/, '').split('"')[0];
                 console.log(currentChannel.question);
                 currentChannel.question = currentChannel.question.replace(/[x][q][e]/, '"');
             }
@@ -87,7 +87,7 @@ client.on('message', message => {
                     i++;
                 }
                 currentChannel.answer = currentChannel.answer.replace(/\"\"/, 'xqe');
-                currentChannel.answer = currentChannel.answer.replace(/\"/, '');
+                currentChannel.answer = currentChannel.answer.replace(/\"/, '').split('"')[0];
                 
                 currentChannel.answer = currentChannel.answer.replace(/[x][q][e]/, '"');
             }
@@ -105,7 +105,7 @@ client.on('message', message => {
             currentPlayer.Cancelled++;
             currentChannel.wait = 0;
         }
-        else if(message.content.toLowerCase().replace(/\s/, '').replace(/[t][h][e]/i, '') == currentChannel.answer.toLowerCase().replace(/\s/,'').replace(/[t][h][e]/i, '')){
+        else if(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') == currentChannel.answer.toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')){
             message.channel.send("```Correct! The answer was "+currentChannel.answer+"```");
             currentChannel.wait = 0;
             currentPlayer.Correct++;
