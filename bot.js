@@ -67,7 +67,7 @@ client.on('message', message => {
                 i = 1;
             }
             if(lineSplit[i-1][0] == '"'){
-                while(lineSplit[i-1][lineSplit[i].length-1] != '"'){
+                while(lineSplit[i-1][lineSplit[i-1].length-1] != '"'){
                     currentChannel.question += ","+lineSplit[i];
                     i++;
                 }
@@ -77,7 +77,7 @@ client.on('message', message => {
             }
             currentChannel.answer = "";
             if(lineSplit[i][0] == '"'){
-                while(lineSplit[i-1][lineSplit[i].length-1] != '"'){
+                while(lineSplit[i-1][lineSplit[i-1].length-1] != '"'){
                     currentChannel.answer += ","+lineSplit[i];
                     i++;
                 }
