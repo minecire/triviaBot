@@ -77,6 +77,7 @@ client.on('message', message => {
                 }
                 currentChannel.question = currentChannel.question.replace(/\"\"/, 'xqe');
                 currentChannel.question = currentChannel.question.replace(/\"/, '');
+                console.log(currentChannel.question);
                 currentChannel.question = currentChannel.question.replace(/[x][q][e]/, '"');
             }
             currentChannel.answer = "";
@@ -87,6 +88,7 @@ client.on('message', message => {
                 }
                 currentChannel.answer = currentChannel.answer.replace(/\"\"/, 'xqe');
                 currentChannel.answer = currentChannel.answer.replace(/\"/, '');
+                
                 currentChannel.answer = currentChannel.answer.replace(/[x][q][e]/, '"');
             }
             else{
