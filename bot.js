@@ -11,6 +11,7 @@ var players = [];
 
 client.on('ready', () => {  
     console.log('Logged in as ${client.user.tag}!');
+    client.user.setActivity('triv h', { type: 'WATCHING' })
 });
 
 client.on('message', message => {
@@ -46,6 +47,14 @@ client.on('message', message => {
     // //console.log(res.body[1].data.children);
 
     // });
+    if (msg.content == 'triv ping' || msg.content == 'triv p') {
+        msg.reply("pong")
+        .then(rep => {
+            let ping = rep.createdTimestamp-msg.createdTimestamp;
+            rep.edit(`<@${msg.author.id}> ponged after ` + ping.toString() + "ms.");
+        })
+        .catch(console.error);
+    }
     if(message.content == "triv q" || message.content == "triv question"){
         if(currentChannel.wait > 0){
             message.channel.send("```Previous Question cancelled. The answer was "+currentChannel.answer+"```");
@@ -118,7 +127,7 @@ client.on('message', message => {
         message.channel.send("```diff\nStats for "+currentPlayer.Name+"\n\n+Answered Correctly "+currentPlayer.Correct+" times \n-Answered Incorrectly "+currentPlayer.Incorrect+" times \n"+(Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)>50?"+":"-")+"Answered Correctly "+Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)+"% of the time\n-Ran out of time "+currentPlayer.OutOfTime+" times\n-Cancelled a question "+currentPlayer.Cancelled+" times```")
     }
     if(message.content == "triv h" || message.content == "triv help"){
-        message.channel.send("```Trivia bot commands: \ntriv question: recieve a trivia question to try to answer. This will also cancel a previous question if it is currently being asked. Aliases: triv q\ncancel: cancel the question currently being asked. Aliases: idk, nvm\ntriv stats: displays statistics about you. Aliases: triv s\ntriv help: displays this help message. Alisases: triv h```");
+        message.channel.send("```Trivia bot commands: \ntriv question: recieve a trivia question to try to answer. This will also cancel a previous question if it is currently being asked. Aliases: triv q\ncancel: cancel the question currently being asked. Aliases: idk, nvm\ntriv stats: displays statistics about you. Aliases: triv s\ntriv help: displays this help message. Alisases: triv h\ntriv ping: pings triviaBot and displays a response time. Aliases: triv p```");
     }
 });
 
