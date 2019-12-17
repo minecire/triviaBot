@@ -1,24 +1,14 @@
 {
-
     "name": "Example",
-
     "description": "Example",
-
     "version": "0.0.0",
-
     "main": "bot.js",
-
     "scripts": {
-
         "start": "node bot.js"
-
     },
-
     "dependencies": {
-
         "discord.js": "11.5.1",
-
+        "js-levenshtein": "^1.1.6",
         "request": "2.88.0"
-
     }
 }

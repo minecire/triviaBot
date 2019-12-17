@@ -3,6 +3,7 @@ const client = new Discord.Client();
 
 const sf = require('snekfetch');
 const fs = require('fs');
+const lev = require('js-levenshtein');
 var currentTriv;
 var currentLine;
 var channels = [];
@@ -39,9 +40,10 @@ client.on('message', message => {
         }
     }
     if(addChannel){
-        currentChannel = {id:message.channel.id, question:"", answer:"", timeout:0, wait:0};
+        currentChannel = {id:message.channel.id, player:currentPlayer, question:"", answer:"", timeout:0, wait:0, remaining:0};
         channels.push(currentChannel);
     }
+    
     // sf.get(`https://www.reddit.com/r/trivia/random.json?limit=1`).then(res => {
     // message.channel.send(res.body[0].data.children[0].data.selftext);
     // //console.log(res.body[1].data.children);
@@ -57,7 +59,7 @@ client.on('message', message => {
     }
     if(message.content == "triv q" || message.content == "triv question"){
         if(currentChannel.wait > 0){
-            message.channel.send("```Previous Question cancelled. The answer was "+currentChannel.answer+"```");
+            message.channel.send("```Previous Question cancelled. The answer was \""+currentChannel.answer+"\".```");
             currentPlayer.Cancelled++;
         }
         fs.readFile('TriviaQ.txt', 'utf-8', (err, data) => {
@@ -106,20 +108,30 @@ client.on('message', message => {
             currentChannel.answering = true;
             message.channel.send("```Trivia question #"+currentTriv+"\n"+currentChannel.question+"```");
             currentChannel.wait = 90;
+            currentChannel.player = currentPlayer;
+            currentChannel.remaining = 5;
         });
     }
     else if(currentChannel.wait > 0){
         if(message.content == "cancel" || message.content == "idk" || message.content == "nvm"){
-            message.channel.send("```Trivia question cancelled. The answer was "+currentChannel.answer+"```");
+            message.channel.send("```Trivia question cancelled. The answer was \""+currentChannel.answer+"\".```");
             currentPlayer.Cancelled++;
             currentChannel.wait = 0;
         }
-        else if(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') == currentChannel.answer.toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')){
-            message.channel.send("```Correct! The answer was "+currentChannel.answer+"```");
+        else if(lev(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') , currentChannel.answer.toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')) <= 2){
+            message.channel.send("```Correct! The answer was \""+currentChannel.answer+"\".```");
             currentChannel.wait = 0;
             currentPlayer.Correct++;
         }
         else{
+            currentChannel.remaining--;
+            if(currentChannel.remaining > 0){
+                message.channel.send("```Incorrect. You have "+currentChannel.remaining+" guesses left.```");
+            }
+            else{
+                message.channel.send("```Incorrect. The correct answer was \""+currentChannel.answer+"\".```");
+                currentChannel.wait = -1;
+            }
             currentPlayer.Incorrect++;
         }
     }
@@ -137,8 +149,8 @@ var interval = setInterval(function(){
     for(var i = 0; i < channels.length; i++){
         channels[i].wait--;
         if(channels[i].wait == 0){
-            message.channel.send("```Out of time. The correct answer was "+currentChannel.answer+"```");
-            currentPlayer.OutOfTime++;
+            client.channels.get(channels[i].id,"id").send("```Out of time. The correct answer was \""+channels[i].answer+"\".```");
+            channels[i].player.OutOfTime++;
         }
     }
 },1000);
