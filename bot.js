@@ -10,7 +10,7 @@ var channels = [];
 var players = [];
 
 
-client.on('ready', () => {  
+client.on('ready', () => {
     console.log('Logged in as ${client.user.tag}!');
     client.user.setActivity('triv h', { type: 'WATCHING' })
 });
@@ -28,7 +28,7 @@ client.on('message', message => {
         }
     }
     if(addName){
-        currentPlayer = {Name:message.author.username, id:message.author.id, Correct:0, Incorrect:0, OutOfTime:0, Cancelled:0};
+        currentPlayer = {Name:message.author.username, id:message.author.id, Correct:0, Incorrect:0, OutOfTime:0, Cancelled:0, score:0};
         players.push(currentPlayer);
     }
     var currentChannel;
@@ -40,7 +40,7 @@ client.on('message', message => {
         }
     }
     if(addChannel){
-        currentChannel = {id:message.channel.id, player:currentPlayer, question:"", answer:"", timeout:0, wait:0, remaining:0};
+        currentChannel = {id:message.channel.id, player:currentPlayer, question:"", answer:"", answers:[], timeout:0, wait:0, remaining:0, multiAnswer:false};
         channels.push(currentChannel);
     }
     
@@ -57,15 +57,35 @@ client.on('message', message => {
         })
         .catch(console.error);
     }
-    if(message.content == "triv q" || message.content == "triv question"){
+    if(message.content.split("oq")[0] == "triv " || message.content.split("oquestion")[0] == "triv "){
         if(currentChannel.wait > 0){
-            message.channel.send("```Previous Question cancelled. The answer was \""+currentChannel.answer+"\".```");
+            if(currentChannel.multiAnswer == false){
+                message.channel.send("```diff\n-Question cancelled. The correct answer was \""+currentChannel.answer+"\". -10 points```");
+            }
+            else{
+                var ansString = "[";
+                for(var j = 0; j < currentChannel.answers.length; j++){
+                    ansString += currentChannel.answers[j];
+                    if(j < currentChannel.answers.length-1){
+                        ansString += ",";
+                    }
+                }
+                ansString += "]"
+                message.channel.send("```diff\n-Question cancelled. The correct answers were \""+ansString+"\". -10 points```");
+            }
             currentPlayer.Cancelled++;
+            currentPlayer.score -= 10;
         }
         fs.readFile('TriviaQ.txt', 'utf-8', (err, data) => {
             if (err) throw err;
             var dataSplit = data.split('\n');
-            currentTriv = Math.floor(Math.random()*dataSplit.length);
+            if(Number(message.content.split(" ")[2]) < dataSplit.length){
+                currentTriv = Number(message.content.split(" ")[2]);
+                console.log(currentTriv);
+            }
+            else{
+                currentTriv = Math.floor(Math.random()*dataSplit.length);
+            }
             currentLine = Math.floor(Math.random()*2);
             var lineSplit = dataSplit[currentTriv].split(',');
             var i;
@@ -88,7 +108,6 @@ client.on('message', message => {
                 }
                 currentChannel.question = currentChannel.question.replace(/\"\"/, 'xqe');
                 currentChannel.question = currentChannel.question.replace(/\"/, '').split('"')[0];
-                console.log(currentChannel.question);
                 currentChannel.question = currentChannel.question.replace(/[x][q][e]/, '"');
             }
             currentChannel.answer = "";
@@ -106,37 +125,137 @@ client.on('message', message => {
                 currentChannel.answer = lineSplit[i];
             }
             currentChannel.answering = true;
+            currentChannel.multiAnswer = false;
             message.channel.send("```Trivia question #"+currentTriv+"\n"+currentChannel.question+"```");
             currentChannel.wait = 90;
             currentChannel.player = currentPlayer;
             currentChannel.remaining = 5;
         });
     }
-    else if(currentChannel.wait > 0){
-        if(message.content == "cancel" || message.content == "idk" || message.content == "nvm"){
-            message.channel.send("```Trivia question cancelled. The answer was \""+currentChannel.answer+"\".```");
-            currentPlayer.Cancelled++;
-            currentChannel.wait = 0;
-        }
-        else if(lev(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') , currentChannel.answer.toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')) <= 2){
-            message.channel.send("```Correct! The answer was \""+currentChannel.answer+"\".```");
-            currentChannel.wait = 0;
-            currentPlayer.Correct++;
-        }
-        else{
-            currentChannel.remaining--;
-            if(currentChannel.remaining > 0){
-                message.channel.send("```Incorrect. You have "+currentChannel.remaining+" guesses left.```");
+    else if(message.content.split("q")[0] == "triv " || message.content.split("question")[0] == "triv "){
+        if(currentChannel.wait > 0){
+            if(currentChannel.multiAnswer == false){
+                message.channel.send("```diff\n-Question cancelled. The correct answer was \""+currentChannel.answer+"\". -10 points```");
             }
             else{
-                message.channel.send("```Incorrect. The correct answer was \""+currentChannel.answer+"\".```");
-                currentChannel.wait = -1;
+                var ansString = "[";
+                for(var j = 0; j < currentChannel.answers.length; j++){
+                    ansString += currentChannel.answers[j];
+                    if(j < currentChannel.answers.length-1){
+                        ansString += ",";
+                    }
+                }
+                ansString += "]"
+                message.channel.send("```diff\n-Question cancelled. The correct answers were \""+ansString+"\". -10 points```");
             }
-            currentPlayer.Incorrect++;
+            currentPlayer.Cancelled++;
+            currentPlayer.score -= 10;
         }
+        fs.readFile('TriviaQ2.json', 'utf-8', (err, data) => {
+            if (err) throw err;
+            var dataSplit = data.split('\n');
+            if(Number(message.content.split(" ")[2]) < dataSplit.length){
+                currentTriv = Number(message.content.split(" ")[2]);
+                console.log(currentTriv);
+            }
+            else{
+                currentTriv = Math.floor(Math.random()*dataSplit.length);
+            }
+            var currentJson = JSON.parse(dataSplit[currentTriv]);
+            
+            currentChannel.question = currentJson.question;
+            if(currentChannel.answer != 0){
+                currentChannel.answer = currentJson.answer;
+                currentChannel.multiAnswer = false;
+            }
+            else{
+                currentChannel.answers = currentJson.answers;
+                currentChannel.multiAnswer = true;
+            }
+
+            currentChannel.answering = true;
+            message.channel.send("```Trivia question #"+currentTriv+"\n"+currentChannel.question+"```");
+            currentChannel.wait = 90;
+            currentChannel.player = currentPlayer;
+            currentChannel.remaining = 5;
+        })
+    }
+    else if(currentChannel.wait > 0){
+        if(message.content == "cancel" || message.content == "idk" || message.content == "nvm"){
+            if(currentChannel.multiAnswer == false){
+                message.channel.send("```diff\n-Question cancelled. The correct answer was \""+currentChannel.answer+"\". -10 points```");
+            }
+            else{
+                var ansString = "[";
+                for(var j = 0; j < currentChannel.answers.length; j++){
+                    ansString += currentChannel.answers[j];
+                    if(j < currentChannel.answers.length-1){
+                        ansString += ",";
+                    }
+                }
+                ansString += "]"
+                message.channel.send("```diff\n-Question cancelled. The correct answers were \""+ansString+"\". -10 points```");
+            }
+            currentPlayer.Cancelled++;
+            currentChannel.wait = 0;
+            currentPlayer.score -= 10;
+            return;
+        }
+        else if(currentChannel.multiAnswer == false && lev(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') , currentChannel.answer.toString().toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')) <= 2){
+            message.channel.send("```diff\n+Correct! The answer was \""+currentChannel.answer+"\". Solved after "+(90-currentChannel.wait)+" seconds. +"+(Math.ceil(currentChannel.wait/10)*10+10)+" points```");
+            currentPlayer.score += (Math.ceil(currentChannel.wait/10)*10+10);
+            
+            currentChannel.wait = 0;
+            currentPlayer.Correct++;
+            return;
+        }
+        else{
+            for(var i = 0; i < currentChannel.answers.length; i++){
+                if(lev(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') , currentChannel.answers[i].toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')) <= 2){
+                    var ansString = "[";
+                    for(var j = 0; j < currentChannel.answers.length; j++){
+                        ansString += currentChannel.answers[j];
+                        if(j < currentChannel.answers.length-1){
+                            ansString += ",";
+                        }
+                    }
+                    ansString += "]"
+                    message.channel.send("```diff\n+Correct! The answers were \""+ansString+"\". Solved after "+(90-currentChannel.wait)+" seconds. +"+(Math.ceil(currentChannel.wait/10)*10+10)+" points```");
+                    currentPlayer.score += (Math.ceil(currentChannel.wait/10)*10+10);
+                    
+                    currentChannel.wait = 0;
+                    currentPlayer.Correct++;
+                    return;
+                }
+            }
+        }
+        currentChannel.remaining--;
+        if(currentChannel.remaining > 0){
+            message.channel.send("```diff\n-Incorrect. You have "+currentChannel.remaining+" guesses left. -5 points```");
+            currentPlayer.score-=5;
+        }
+        else{
+            if(currentChannel.multiAnswer == false){
+                message.channel.send("```diff\n-Incorrect. The correct answer was \""+currentChannel.answer+"\". -10 points```");
+            }
+            else{
+                var ansString = "[";
+                for(var j = 0; j < currentChannel.answers.length; j++){
+                    ansString += currentChannel.answers[j];
+                    if(j < currentChannel.answers.length-1){
+                        ansString += ",";
+                    }
+                }
+                ansString += "]"
+                message.channel.send("```diff\n-Incorrect. The correct answers were \""+ansString+"\". -10 points```");
+            }
+            currentChannel.wait = -1;
+            currentPlayer.score-=10;
+        }
+        currentPlayer.Incorrect++;
     }
     if(message.content == "triv stats" || message.content == "triv s"){
-        message.channel.send("```diff\nStats for "+currentPlayer.Name+"\n\n+Answered Correctly "+currentPlayer.Correct+" times \n-Answered Incorrectly "+currentPlayer.Incorrect+" times \n"+(Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)>50?"+":"-")+"Answered Correctly "+Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)+"% of the time\n-Ran out of time "+currentPlayer.OutOfTime+" times\n-Cancelled a question "+currentPlayer.Cancelled+" times```")
+        message.channel.send("```diff\nStats for "+currentPlayer.Name+"\n\n"+(currentPlayer.score > 0 ? '+' : '-') +"Score: "+currentPlayer.score+"\n+Answered Correctly "+currentPlayer.Correct+" times \n-Answered Incorrectly "+currentPlayer.Incorrect+" times \n"+(Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)>50?"+":"-")+"Answered Correctly "+Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)+"% of the time\n-Ran out of time "+currentPlayer.OutOfTime+" times\n-Cancelled a question "+currentPlayer.Cancelled+" times```")
     }
     if(message.content == "triv h" || message.content == "triv help"){
         message.channel.send("```Trivia bot commands: \ntriv question: recieve a trivia question to try to answer. This will also cancel a previous question if it is currently being asked. Aliases: triv q\ncancel: cancel the question currently being asked. Aliases: idk, nvm\ntriv stats: displays statistics about you. Aliases: triv s\ntriv help: displays this help message. Alisases: triv h\ntriv ping: pings triviaBot and displays a response time. Aliases: triv p```");
@@ -149,8 +268,23 @@ var interval = setInterval(function(){
     for(var i = 0; i < channels.length; i++){
         channels[i].wait--;
         if(channels[i].wait == 0){
-            client.channels.get(channels[i].id,"id").send("```Out of time. The correct answer was \""+channels[i].answer+"\".```");
+            var currentChannel = client.channels.get(channels[i].id,"id");
+            if(currentChannel.multiAnswer == false){
+                currentChannel.send("```diff\n-Out of time. The correct answer was \""+currentChannel.answer+"\". -10 points```");
+            }
+            else{
+                var ansString = "[";
+                for(var j = 0; j < currentChannel.answers.length; j++){
+                    ansString += currentChannel.answers[j];
+                    if(j < currentChannel.answers.length-1){
+                        ansString += ",";
+                    }
+                }
+                ansString += "]"
+                currentChannel.send("```diff\n-Out of time. The correct answers were \""+ansString+"\". -10 points```");
+            }
             channels[i].player.OutOfTime++;
+            channels[i].player.score -= 10;
         }
     }
 },1000);
