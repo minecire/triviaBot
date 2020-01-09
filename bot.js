@@ -161,7 +161,22 @@ client.on('message', message => {
             else{
                 currentTriv = Math.floor(Math.random()*dataSplit.length);
             }
-            var currentJson = JSON.parse(dataSplit[currentTriv]);
+            var isReal = false;
+            while(!isReal){
+                try{
+                    var currentJson = JSON.parse(dataSplit[currentTriv]);
+                    isReal = true;
+                }
+                catch{
+                    if(Number(message.content.split(" ")[2]) > 0){
+                        message.channel.send(```Invalid Question. Sorry!```);
+                        return;
+                    }
+                    else{
+                        currentTriv  = Math.floor(Math.random()*dataSplit.length);
+                    }
+                }
+            }
             
             currentChannel.question = currentJson.question;
             if(currentChannel.answer != 0){
@@ -201,7 +216,7 @@ client.on('message', message => {
             currentPlayer.score -= 10;
             return;
         }
-        else if(currentChannel.multiAnswer == false && lev(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') , currentChannel.answer.toString().toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')) <= 2){
+        else if(currentChannel.multiAnswer == false && lev(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') , currentChannel.answer.toString().toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')) <= currentChannel.answer.length/5){
             message.channel.send("```diff\n+Correct! The answer was \""+currentChannel.answer+"\". Solved after "+(90-currentChannel.wait)+" seconds. +"+(Math.ceil(currentChannel.wait/10)*10+10)+" points```");
             currentPlayer.score += (Math.ceil(currentChannel.wait/10)*10+10);
             
@@ -211,7 +226,7 @@ client.on('message', message => {
         }
         else{
             for(var i = 0; i < currentChannel.answers.length; i++){
-                if(lev(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') , currentChannel.answers[i].toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')) <= 2){
+                if(lev(message.content.toLowerCase().replace(/\s/, '').split(' ')[0].replace(/[t][h][e]/i, '') , currentChannel.answers[i].toLowerCase().replace(/\s/,'').split(' ')[0].replace(/[t][h][e]/i, '')) < currentChannel.answers[i].length/5){
                     var ansString = "[";
                     for(var j = 0; j < currentChannel.answers.length; j++){
                         ansString += currentChannel.answers[j];
