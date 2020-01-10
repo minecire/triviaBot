@@ -283,7 +283,7 @@ var interval = setInterval(function(){
     for(var i = 0; i < channels.length; i++){
         channels[i].wait--;
         if(channels[i].wait == 0){
-            var currentChannel = client.channels.get(channels[i].id,"id");
+            var currentChannel = channels[i];
             if(currentChannel.multiAnswer == false){
                 currentChannel.send("```diff\n-Out of time. The correct answer was \""+currentChannel.answer+"\". -10 points```");
             }
