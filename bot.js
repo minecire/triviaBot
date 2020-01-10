@@ -285,7 +285,7 @@ var interval = setInterval(function(){
         if(channels[i].wait == 0){
             var currentChannel = channels[i];
             if(currentChannel.multiAnswer == false){
-                currentChannel.send("```diff\n-Out of time. The correct answer was \""+currentChannel.answer+"\". -10 points```");
+                client.channels.get(channels[i].id,"id").send("```diff\n-Out of time. The correct answer was \""+currentChannel.answer+"\". -10 points```");
             }
             else{
                 var ansString = "[";
@@ -296,7 +296,7 @@ var interval = setInterval(function(){
                     }
                 }
                 ansString += "]"
-                currentChannel.send("```diff\n-Out of time. The correct answers were \""+ansString+"\". -10 points```");
+                client.channels.get(channels[i].id,"id").send("```diff\n-Out of time. The correct answers were \""+ansString+"\". -10 points```");
             }
             channels[i].player.OutOfTime++;
             channels[i].player.score -= 10;
