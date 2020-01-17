@@ -1,18 +1,32 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
-const sf = require('snekfetch');
 const fs = require('fs');
 const lev = require('js-levenshtein');
 var currentTriv;
 var currentLine;
 var channels = [];
 var players = [];
+var dateObj = new Date();
+var currentDate;
+var dateQuestions = {d:-1,w:-1,m:-1};
 
 
 client.on('ready', () => {
     console.log('Logged in as ${client.user.tag}!');
     client.user.setActivity('triv h', { type: 'WATCHING' })
+    fs.readFile('./stats.json', 'utf8', (err, s) => {
+        if(err){
+            return;
+        }
+        js = JSON.parse(s);
+        console.log("Data Loaded");
+        channels = js.channels;
+        players = js.players;
+        currentDate = js.currentDate;
+        dateQuestions = js.dateQuestions;
+    });
+    console.log(players);
 });
 
 client.on('message', message => {
@@ -28,7 +42,7 @@ client.on('message', message => {
         }
     }
     if(addName){
-        currentPlayer = {Name:message.author.username, id:message.author.id, Correct:0, Incorrect:0, OutOfTime:0, Cancelled:0, score:0};
+        currentPlayer = {Name:message.author.username, id:message.author.id, Correct:0, Incorrect:0, OutOfTime:0, Cancelled:0, score:0, daily:false, weekly:false, monthly:false};
         players.push(currentPlayer);
     }
     var currentChannel;
@@ -42,6 +56,7 @@ client.on('message', message => {
     if(addChannel){
         currentChannel = {id:message.channel.id, player:currentPlayer, question:"", answer:"", answers:[], timeout:0, wait:0, remaining:0, multiAnswer:false};
         channels.push(currentChannel);
+        save();
     }
     
     // sf.get(`https://www.reddit.com/r/trivia/random.json?limit=1`).then(res => {
@@ -75,6 +90,7 @@ client.on('message', message => {
             }
             currentPlayer.Cancelled++;
             currentPlayer.score -= 10;
+            save();
         }
         fs.readFile('TriviaQ.txt', 'utf-8', (err, data) => {
             if (err) throw err;
@@ -159,7 +175,7 @@ client.on('message', message => {
                 console.log(currentTriv);
             }
             else{
-                currentTriv = Math.floor(Math.random()*dataSplit.length);
+                currentTriv = Math.floor(Math.random()*(dataSplit.length-5000)+5000);
             }
             var isReal = false;
             while(!isReal){
@@ -194,6 +210,158 @@ client.on('message', message => {
             currentChannel.player = currentPlayer;
             currentChannel.remaining = 5;
         })
+    }
+    else if(message.content.split("d")[0] == "triv " || message.content.split("daily")[0] == "triv "){
+        if(currentDate != dateObj.getDate()){
+            currentDate = dateObj.getDate();
+            for(var i = 0; i < players.length; i++){
+                players[i].daily = false;
+            }
+            dateQuestions.d = Math.floor(Math.random()*4000+1000);
+            var isReal = false;
+            fs.readFile('TriviaQ2.json', 'utf-8', (err, data) => {
+                var dataSplit = data.split('\n');
+
+                while(!isReal){
+                    try{
+                        JSON.parse(dataSplit[dateQuestions.d]);
+                        isReal = true;
+                    }
+                    catch{
+                        dateQuestions.d = Math.floor(Math.random()*4000+1000);
+                    }
+                }
+            });
+        }
+        if(currentPlayer.daily == true){
+            message.channel.send("```You have already answered this question today!```");
+        }
+        else{
+            currentPlayer.daily = true;
+            fs.readFile('TriviaQ2.json', 'utf-8', (err, data) => {
+
+                if (err) throw err;
+                var dataSplit = data.split('\n');
+                var currentJson = JSON.parse(dataSplit[dateQuestions.d]);
+                currentTriv = dateQuestions.d;
+                currentChannel.question = currentJson.question;
+                if(currentChannel.answer != 0){
+                    currentChannel.answer = currentJson.answer;
+                    currentChannel.multiAnswer = false;
+                }
+                else{
+                    currentChannel.answers = currentJson.answers;
+                    currentChannel.multiAnswer = true;
+                }
+
+                currentChannel.answering = true;
+                message.channel.send("```Daily Trivia Question:\n"+currentChannel.question+"```");
+                currentChannel.wait = 500;
+                currentChannel.player = currentPlayer;
+                currentChannel.remaining = 1;
+            });
+        }
+    }
+    else if(message.content.split("w")[0] == "triv " || message.content.split("weekly")[0] == "triv "){
+        if(currentDate != dateObj.getDate() && dateObj.getDay() == "Mon" || dateQuestions.w == -1){
+            console.log("weekly");
+            currentDate = dateObj.getDate();
+            for(var i = 0; i < players.length; i++){
+                players[i].weekly = false;
+            }
+            console.log("weekly2");
+            dateQuestions.w = Math.floor(Math.random()*400+100);
+            var isReal = false;
+            while(!isReal){
+                fs.readFile('TriviaQ2.json', 'utf-8', (err, data) => {
+                    try{
+                        console.log(dateQuestions);
+                        JSON.parse(dataSplit[dateQuestions.w]);
+                        isReal = true;
+                    }
+                    catch{
+                        console.log(dateQuestions);
+                        dateQuestions.w = Math.floor(Math.random()*400+100);
+                    }
+                });
+            }
+            console.log("weekly3");
+        }
+        if(currentPlayer.weekly == true){
+            message.channel.send("```You have already answered this this week!```");
+        }
+        else{
+            currentPlayer.weekly = true;
+            fs.readFile('TriviaQ2.json', 'utf-8', (err, data) => {
+                if (err) throw err;
+                var dataSplit = data.split('\n');
+                var currentJson = JSON.parse(dataSplit[dateQuestions.w]);
+                currentTriv = dateQuestions.w;
+                currentChannel.question = currentJson.question;
+                if(currentChannel.answer != 0){
+                    currentChannel.answer = currentJson.answer;
+                    currentChannel.multiAnswer = false;
+                }
+                else{
+                    currentChannel.answers = currentJson.answers;
+                    currentChannel.multiAnswer = true;
+                }
+
+                currentChannel.answering = true;
+                message.channel.send("```Weekly Trivia Question:\n"+currentChannel.question+"```");
+                currentChannel.wait = 2000;
+                currentChannel.player = currentPlayer;
+                currentChannel.remaining = 1;
+            });
+        }
+    }
+    else if(message.content.split("m")[0] == "triv " || message.content.split("monthly")[0] == "triv "){
+        if(currentDate != dateObj.getDate() && dateObj.getDate() == 1 || dateQuestions.m == -1){
+            currentDate = dateObj.getDate();
+            for(var i = 0; i < players.length; i++){
+                players[i].monthly = false;
+            }
+            dateQuestions.m = Math.floor(Math.random*100);
+            var isReal = false;
+            fs.readFile('TriviaQ2.json', 'utf-8', (err, data) => {
+                while(!isReal){
+                    try{
+                        JSON.parse(dataSplit[dateQuestions.m]);
+                        isReal = true;
+                    }
+                    catch{
+                        dateQuestions.m = Math.floor(Math.random*100);
+                    }
+                }
+            });
+        }
+        if(currentPlayer.monthly == true){
+            message.channel.send("```You have already answered this this week!```");
+        }
+        else{
+            currentPlayer.monthly = true;
+            fs.readFile('TriviaQ2.json', 'utf-8', (err, data) => {
+                if (err) throw err;
+                var dataSplit = data.split('\n');
+                var currentJson = JSON.parse(dataSplit[dateQuestions.m]);
+                currentTriv = dateQuestions.m;
+                currentChannel.question = currentJson.question;
+                if(currentChannel.answer != 0){
+                    currentChannel.answer = currentJson.answer;
+                    currentChannel.multiAnswer = false;
+                }
+                else{
+                    currentChannel.answers = currentJson.answers;
+                    currentChannel.multiAnswer = true;
+                }
+
+                currentChannel.answering = true;
+                message.channel.send("```Monthly Trivia Question:\n"+currentChannel.question+"```");
+                currentChannel.wait = 10000;
+                currentChannel.player = currentPlayer;
+                currentChannel.remaining = 1;
+            });
+        }
     }
     else if(currentChannel.wait > 0){
         if(message.content == "cancel" || message.content == "idk" || message.content == "nvm"){
@@ -268,12 +436,13 @@ client.on('message', message => {
             currentPlayer.score-=10;
         }
         currentPlayer.Incorrect++;
+        save();
     }
     if(message.content == "triv stats" || message.content == "triv s"){
         message.channel.send("```diff\nStats for "+currentPlayer.Name+"\n\n"+(currentPlayer.score > 0 ? '+' : '-') +"Score: "+currentPlayer.score+"\n+Answered Correctly "+currentPlayer.Correct+" times \n-Answered Incorrectly "+currentPlayer.Incorrect+" times \n"+(Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)>50?"+":"-")+"Answered Correctly "+Math.floor(currentPlayer.Correct/(currentPlayer.Incorrect+currentPlayer.Correct)*100)+"% of the time\n-Ran out of time "+currentPlayer.OutOfTime+" times\n-Cancelled a question "+currentPlayer.Cancelled+" times```")
     }
     if(message.content == "triv h" || message.content == "triv help"){
-        message.channel.send("```Trivia bot commands: \ntriv question: recieve a trivia question to try to answer. This will also cancel a previous question if it is currently being asked. Aliases: triv q\ncancel: cancel the question currently being asked. Aliases: idk, nvm\ntriv stats: displays statistics about you. Aliases: triv s\ntriv help: displays this help message. Alisases: triv h\ntriv ping: pings triviaBot and displays a response time. Aliases: triv p```");
+        message.channel.send("```Trivia bot commands: \ntriv question: recieve a trivia question to try to answer. This will also cancel a previous question if it is currently being asked. Aliases: triv q\ntriv daily: give the daily trivia question. Aliases: triv d\ntriv weekly: give the weekly trivia question. Aliases: triv w\ntriv monthly: give the monthly trivia question. Aliases: triv m\ncancel: cancel the question currently being asked. Aliases: idk, nvm\ntriv stats: displays statistics about you. Aliases: triv s\ntriv help: displays this help message. Alisases: triv h\ntriv ping: pings triviaBot and displays a response time. Aliases: triv p```");
     }
 });
 
@@ -300,6 +469,17 @@ var interval = setInterval(function(){
             }
             channels[i].player.OutOfTime++;
             channels[i].player.score -= 10;
+            save();
         }
     }
 },1000);
+
+function save(){
+    const saveObject = {channels:channels, players:players, currentDate:currentDate, dateQuestions:dateQuestions};
+    const saveJson = JSON.stringify(saveObject);
+    fs.writeFile("stats.json", saveJson, err => {
+        if(!err){
+            console.log("Data Saved");
+        }
+    });
+}
